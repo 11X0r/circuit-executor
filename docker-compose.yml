@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  nats:
+    image: nats:latest
+    container_name: nats-server
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - circuit-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-server
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - circuit-net
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: circuit-api
+    ports:
+      - "8000:8000"
+    environment:
+      - NATS_URL=nats:4222
+      - REDIS_URL=redis://redis:6379
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - nats
+      - redis
+    networks:
+      - circuit-net
+    volumes:
+      - ./config:/app/config:ro
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./worker/Dockerfile
+    environment:
+      - NATS_URL=nats:4222
+      - REDIS_URL=redis://redis:6379
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - nats
+      - redis
+    networks:
+      - circuit-net
+    volumes:
+      - ./config:/app/config:ro
+
+networks:
+  circuit-net:
+
+volumes:
+  redis-data:

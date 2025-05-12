@@ -1,0 +1,15 @@
+# Core
+fastapi
+uvicorn
+qiskit
+qiskit-aer
+nats-py
+redis
+pydantic
+tomli
+
+# Dev
+pytest
+pytest-asyncio
+httpx
+qiskit_qasm3_import
